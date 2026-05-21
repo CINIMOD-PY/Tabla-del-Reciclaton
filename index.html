@@ -159,7 +159,7 @@
                     <td>Lucia</td>
                     <td>CDI</td>
                     <td>4° C</td>
-                    <td class="pts">35o</td>
+                    <td class="pts">350</td>
                 </tr>
                 <!-- Puedes meter más filas copiando desde el <tr> hasta el </tr> -->
             </tbody>
@@ -189,6 +189,60 @@
                 console.error("Error buscando actualizaciones:", error);
             }
         }, 15000); // Revisa cada 15 segundos para que sea aún más rápido
+    </script>
+    <script>
+        // Función para ordenar la tabla de mayor a menor puntuación
+        function ordenarTabla() {
+            const tbody = document.querySelector('tbody');
+            const filas = Array.from(tbody.querySelectorAll('tr'));
+
+            filas.sort((a, b) => {
+                const ptsA = parseInt(a.querySelector('.pts').textContent) || 0;
+                const ptsB = parseInt(b.querySelector('.pts').textContent) || 0;
+                return ptsB - ptsA; // Ordena de mayor a menor
+            });
+
+            // Volver a meter las filas ya ordenadas y corregir el número de posición
+            filas.forEach((fila, indice) => {
+                const numPos = indice + 1;
+                const celdaPos = fila.querySelector('.pos');
+                
+                // Limpiar clases viejas de medallas
+                celdaPos.className = 'pos';
+                
+                // Asignar número y color de medalla si aplica
+                celdaPos.textContent = numPos;
+                if (numPos === 1) celdaPos.classList.add('pos-1');
+                else if (numPos === 2) celdaPos.classList.add('pos-2');
+                else if (numPos === 3) celdaPos.classList.add('pos-3');
+
+                tbody.appendChild(fila);
+            });
+        }
+
+        // Ejecutar el ordenamiento apenas cargue la página
+        ordenarTabla();
+
+        // Revisar cambios en el servidor cada 15 segundos
+        setInterval(async () => {
+            try {
+                const respuesta = await fetch(window.location.href, { cache: 'no-store' });
+                const textoNuevo = await respuesta.text();
+
+                const parser = new DOMParser();
+                const docNuevo = parser.parseFromString(textoNuevo, 'text/html');
+                
+                const tablaActual = document.querySelector('tbody').innerHTML;
+                const tablaNueva = docNuevo.querySelector('tbody').innerHTML;
+
+                if (tablaActual !== tablaNueva) {
+                    console.log("Cambios detectados, recargando...");
+                    window.location.reload();
+                }
+            } catch (error) {
+                console.error("Error buscando actualizaciones:", error);
+            }
+        }, 15000);
     </script>
 </body>
 </html>
